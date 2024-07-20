@@ -17,30 +17,26 @@
         }
 
         #exportButton {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px 0;
+            font-size: 16px;
+            color: #fff;
             background-color: #4CAF50;
             border: none;
-            color: white;
-            padding: 15px 32px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
+            border-radius: 5px;
             cursor: pointer;
-            border-radius: 12px;
-            transition-duration: 0.4s;
+            transition: background-color 0.3s ease;
         }
 
         #exportButton:hover {
-            background-color: white;
-            color: black;
-            border: 2px solid #4CAF50;
+            background-color: #45a049;
         }
     </style>
 </head>
 <body>
-    <div id="container"></div>
     <button id="exportButton">Export to Excel</button>
+    <div id="container"></div>
     <script>
         // Era Widget initialization
         const eraWidget = new EraWidget();
@@ -52,18 +48,20 @@
         });
 
         eraWidget.onValues((values) => {
-            BreathValue = values[config.id].value; // Lấy giá trị nhịp thở thực tế
+            BreathValue = values[config.id].value; // Lấy giá trị nhịp thở thực tế từ Era Widget
         });
 
         eraWidget.ready();
-        
+
         const dataBuffer = [];
 
         // Create the chart
         Highcharts.stockChart('container', {
             chart: {
+                backgroundColor: '#f0f0f0', // Đổi màu nền phía sau
                 events: {
                     load: function () {
+                        // set up the updating of the chart each second
                         const series = this.series[0];
                         setInterval(function () {
                             const x = (new Date()).getTime(), // current time
@@ -105,13 +103,13 @@
             },
 
             exporting: {
-                enabled: true
+                enabled: false
             },
 
             series: [{
                 name: 'Breath data',
                 data: (function () {
-                    // generate an array of initial data
+                    // generate an array of random data
                     const data = [],
                         time = (new Date()).getTime();
 
@@ -131,8 +129,8 @@
                         y2: 1
                     },
                     stops: [
-                        [0, Highcharts.getOptions().colors[0]],
-                        [1, Highcharts.color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
+                        [0, Highcharts.getOptions().colors[6]],
+                        [1, Highcharts.color(Highcharts.getOptions().colors[6]).setOpacity(0).get('rgba')]
                     ]
                 }
             }]
