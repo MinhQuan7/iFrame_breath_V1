@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Breath Data - Realtime Display</title>
     <script src="https://code.highcharts.com/stock/highstock.js"></script>
     <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
     <script src="https://code.highcharts.com/stock/modules/export-data.js"></script>
     <script src="https://code.highcharts.com/modules/accessibility.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <script src="https://www.unpkg.com/@eohjsc/era-widget@1.0.14/src/index.js"></script>
     <style>
         #container {
             height: 400px;
@@ -16,122 +17,92 @@
     </style>
 </head>
 <body>
-    <figure>
-        <button id="exportButton">Export to Excel</button>
-    </figure>
     <div id="container"></div>
     <script>
-        // Kiểm tra xem EraWidget có được định nghĩa không
-        if (typeof EraWidget === 'undefined') {
-            console.error('EraWidget is not defined. Make sure the EraWidget library is loaded.');
-        } else {
-            // Era Widget initialization
-            const eraWidget = new EraWidget();
-            let config = null;
-            let BreathValue = 0; // Khởi tạo giá trị nhịp thở mặc định
+        // Era Widget initialization
+        const eraWidget = new EraWidget();
+        let config = null;
+        let BreathValue = 0; // Khởi tạo giá trị nhịp tim mặc định
 
-            eraWidget.onConfiguration((configuration) => {
-                config = configuration.realtime_configs[0];
-            });
+        eraWidget.onConfiguration((configuration) => {
+            config = configuration.realtime_configs[0];
+        });
 
-            eraWidget.onValues((values) => {
-                BreathValue = values[config.id].value; // Giả sử values[config.id].value là nhịp thở thực tế
-            });
+        eraWidget.onValues((values) => {
+            const input = document.getElementById('Breath');
+            BreathValue = values[config.id].value; // Giả sử values[config.id].value là nhịp tim thực tế
+            input.checked = values[config.id].value > 0; // Đặt trạng thái của checkbox dựa trên nhịp tim
+        });
 
-            eraWidget.ready();
-            
-            const dataBuffer = [];
+        eraWidget.ready();
+        
+        // Create the chart
+        Highcharts.stockChart('container', {
+            chart: {
+                events: {
+                    load: function () {
 
-            // Create the chart
-            Highcharts.stockChart('container', {
-                chart: {
-                    events: {
-                        load: function () {
-                            // set up the updating of the chart each second
-                            const series = this.series[0];
-                            setInterval(function () {
-                                const x = (new Date()).getTime(), // current time
-                                    y = BreathValue;
-                                series.addPoint([x, y], true, true);
-                                dataBuffer.push([x, y]); // Lưu trữ dữ liệu vào mảng dataBuffer
-                            }, 1000);
-                        }
+                        // set up the updating of the chart each second
+                        const series = this.series[0];
+                        setInterval(function () {
+                            const x = (new Date()).getTime(), // current time
+                                y = BreathValue;
+                            series.addPoint([x, y], true, true);
+                        }, 1000);
                     }
-                },
+                }
+            },
 
-                accessibility: {
-                    enabled: false
-                },
+            accessibility: {
+                enabled: false
+            },
 
-                time: {
-                    useUTC: false
-                },
+            time: {
+                useUTC: false
+            },
 
-                rangeSelector: {
-                    buttons: [{
-                        count: 1,
-                        type: 'minute',
-                        text: '1M'
-                    }, {
-                        count: 5,
-                        type: 'minute',
-                        text: '5M'
-                    }, {
-                        type: 'all',
-                        text: 'All'
-                    }],
-                    inputEnabled: false,
-                    selected: 0
-                },
+            rangeSelector: {
+                buttons: [{
+                    count: 1,
+                    type: 'minute',
+                    text: '1M'
+                }, {
+                    count: 5,
+                    type: 'minute',
+                    text: '5M'
+                }, {
+                    type: 'all',
+                    text: 'All'
+                }],
+                inputEnabled: false,
+                selected: 0
+            },
 
-                title: {
-                    text: 'Live Breath Data - Realtime Display'
-                },
+            title: {
+                text: 'Live Breath Data - Realtime Display'
+            },
 
-                exporting: {
-                    enabled: false
-                },
+            exporting: {
+                enabled: false
+            },
 
-                series: [{
-                    name: 'Breath data',
-                    data: (function () {
-                        // generate an array of random data
-                        const data = [],
-                            time = (new Date()).getTime();
+            series: [{
+                name: 'Breath data',
+                data: (function () {
+                    // generate an array of random data
+                    const data = [],
+                        time = (new Date()).getTime();
 
-                        for (let i = -999; i <= 0; i += 1) {
-                            data.push([
-                                time + i * 1000,
-                                BreathValue
-                            ]);
-                        }
-                        return data;
-                    }()),
-                    fillColor: {
-                        linearGradient: {
-                            x1: 0,
-                            x2: 0,
-                            y1: 0,
-                            y2: 1
-                        },
-                        stops: [
-                            [0, Highcharts.getOptions().colors[8]],
-                            [1, Highcharts.color(Highcharts.getOptions().colors[6]).setOpacity(0).get('rgba')]
-                        ]
+                    for (let i = -999; i <= 0; i += 1) {
+                        data.push([
+                            time + i * 1000,
+                            BreathValue
+                        ]);
                     }
-                }]
-            });
-
-            document.getElementById('exportButton').addEventListener('click', function () {
-                const ws = XLSX.utils.json_to_sheet(dataBuffer.map(point => ({
-                    Time: (new Date(point[0])).toLocaleString(),
-                    BreathValue: point[1]
-                })));
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, 'Breath');
-                XLSX.writeFile(wb, 'BreathValue.xlsx');
-            });
-        }
+                    return data;
+                }())
+            }]
+        });
     </script>
 </body>
 </html>
