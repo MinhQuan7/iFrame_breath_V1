@@ -9,6 +9,7 @@
     <script src="https://code.highcharts.com/stock/modules/export-data.js"></script>
     <script src="https://code.highcharts.com/modules/accessibility.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <script src="https://www.unpkg.com/@eohjsc/era-widget@1.0.14/src/index.js"></script>
     <style>
         #container {
             height: 400px;
@@ -41,37 +42,7 @@
     <div id="container"></div>
     <button id="exportButton">Export to Excel</button>
     <script>
-        // Giả lập Era Widget
-        class EraWidget {
-            constructor() {
-                this.callbacks = {};
-            }
-            onConfiguration(callback) {
-                this.callbacks['configuration'] = callback;
-            }
-            onValues(callback) {
-                this.callbacks['values'] = callback;
-            }
-            ready() {
-                // Giả lập dữ liệu cấu hình và dữ liệu nhịp thở
-                setTimeout(() => {
-                    if (this.callbacks['configuration']) {
-                        this.callbacks['configuration']({
-                            realtime_configs: [{ id: 'breath' }]
-                        });
-                    }
-                }, 1000);
-
-                setInterval(() => {
-                    if (this.callbacks['values']) {
-                        this.callbacks['values']({
-                            'breath': { value: Math.floor(Math.random() * 100) }
-                        });
-                    }
-                }, 1000);
-            }
-        }
-
+        // Era Widget initialization
         const eraWidget = new EraWidget();
         let config = null;
         let BreathValue = 0; // Khởi tạo giá trị nhịp thở mặc định
@@ -81,7 +52,7 @@
         });
 
         eraWidget.onValues((values) => {
-            BreathValue = values[config.id].value; // Giả sử values[config.id].value là nhịp thở thực tế
+            BreathValue = values[config.id].value; // Lấy giá trị nhịp thở thực tế
         });
 
         eraWidget.ready();
