@@ -38,12 +38,40 @@
     </style>
 </head>
 <body>
-    <figure>
-        <button id="exportButton">Export to Excel</button>
-    </figure>
     <div id="container"></div>
+    <button id="exportButton">Export to Excel</button>
     <script>
-        // Era Widget initialization
+        // Giả lập Era Widget
+        class EraWidget {
+            constructor() {
+                this.callbacks = {};
+            }
+            onConfiguration(callback) {
+                this.callbacks['configuration'] = callback;
+            }
+            onValues(callback) {
+                this.callbacks['values'] = callback;
+            }
+            ready() {
+                // Giả lập dữ liệu cấu hình và dữ liệu nhịp thở
+                setTimeout(() => {
+                    if (this.callbacks['configuration']) {
+                        this.callbacks['configuration']({
+                            realtime_configs: [{ id: 'breath' }]
+                        });
+                    }
+                }, 1000);
+
+                setInterval(() => {
+                    if (this.callbacks['values']) {
+                        this.callbacks['values']({
+                            'breath': { value: Math.floor(Math.random() * 100) }
+                        });
+                    }
+                }, 1000);
+            }
+        }
+
         const eraWidget = new EraWidget();
         let config = null;
         let BreathValue = 0; // Khởi tạo giá trị nhịp thở mặc định
@@ -106,7 +134,7 @@
             },
 
             exporting: {
-                enabled: false
+                enabled: true
             },
 
             series: [{
