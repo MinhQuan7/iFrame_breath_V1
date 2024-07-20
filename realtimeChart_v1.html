@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Breath Data - Realtime Display</title>
     <script src="https://code.highcharts.com/stock/highstock.js"></script>
     <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
     <script src="https://code.highcharts.com/stock/modules/export-data.js"></script>
     <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <script src="https://www.unpkg.com/@eohjsc/era-widget@1.0.14/src/index.js"></script>
     <style>
         #container {
             height: 400px;
             min-width: 310px;
-        }           
+        }
     </style>
 </head>
 <body>
     <div id="container"></div>
-    <input type="checkbox" id="Breath">
-
     <script>
         // Era Widget initialization
         const eraWidget = new EraWidget();
@@ -41,6 +41,7 @@
             chart: {
                 events: {
                     load: function () {
+
                         // set up the updating of the chart each second
                         const series = this.series[0];
                         setInterval(function () {
@@ -51,12 +52,15 @@
                     }
                 }
             },
+
             accessibility: {
                 enabled: false
             },
+
             time: {
                 useUTC: false
             },
+
             rangeSelector: {
                 buttons: [{
                     count: 1,
@@ -73,18 +77,22 @@
                 inputEnabled: false,
                 selected: 0
             },
+
             title: {
                 text: 'Live Breath Data - Realtime Display'
             },
+
             exporting: {
                 enabled: false
             },
+
             series: [{
                 name: 'Breath data',
                 data: (function () {
                     // generate an array of random data
                     const data = [],
                         time = (new Date()).getTime();
+
                     for (let i = -999; i <= 0; i += 1) {
                         data.push([
                             time + i * 1000,
