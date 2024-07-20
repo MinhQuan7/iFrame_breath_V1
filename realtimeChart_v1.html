@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <style>
+        #container {
+            height: 400px;
+            min-width: 310px;
+        }           
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <input type="checkbox" id="Breath">
+
+    <script>
+        // Era Widget initialization
+        const eraWidget = new EraWidget();
+        let config = null;
+        let BreathValue = 0; // Khởi tạo giá trị nhịp tim mặc định
+
+        eraWidget.onConfiguration((configuration) => {
+            config = configuration.realtime_configs[0];
+        });
+
+        eraWidget.onValues((values) => {
+            const input = document.getElementById('Breath');
+            BreathValue = values[config.id].value; // Giả sử values[config.id].value là nhịp tim thực tế
+            input.checked = values[config.id].value > 0; // Đặt trạng thái của checkbox dựa trên nhịp tim
+        });
+
+        eraWidget.ready();
+        
+        // Create the chart
+        Highcharts.stockChart('container', {
+            chart: {
+                events: {
+                    load: function () {
+                        // set up the updating of the chart each second
+                        const series = this.series[0];
+                        setInterval(function () {
+                            const x = (new Date()).getTime(), // current time
+                                y = BreathValue;
+                            series.addPoint([x, y], true, true);
+                        }, 1000);
+                    }
+                }
+            },
+            accessibility: {
+                enabled: false
+            },
+            time: {
+                useUTC: false
+            },
+            rangeSelector: {
+                buttons: [{
+                    count: 1,
+                    type: 'minute',
+                    text: '1M'
+                }, {
+                    count: 5,
+                    type: 'minute',
+                    text: '5M'
+                }, {
+                    type: 'all',
+                    text: 'All'
+                }],
+                inputEnabled: false,
+                selected: 0
+            },
+            title: {
+                text: 'Live Breath Data - Realtime Display'
+            },
+            exporting: {
+                enabled: false
+            },
+            series: [{
+                name: 'Breath data',
+                data: (function () {
+                    // generate an array of random data
+                    const data = [],
+                        time = (new Date()).getTime();
+                    for (let i = -999; i <= 0; i += 1) {
+                        data.push([
+                            time + i * 1000,
+                            BreathValue
+                        ]);
+                    }
+                    return data;
+                }())
+            }]
+        });
+    </script>
+</body>
+</html>
