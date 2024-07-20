@@ -15,7 +15,9 @@
     </style>
 </head>
 <body>
-    <button id="exportButton">Export to Excel</button>
+    <figure>
+        <button id="exportButton">Export to Excel</button>
+    </figure>
     <div id="container"></div>
     <script>
         // Era Widget initialization
@@ -99,7 +101,19 @@
                         ]);
                     }
                     return data;
-                }())
+                }()),
+                fillColor: {
+                        linearGradient: {
+                            x1: 0,
+                            x2: 0,
+                            y1: 0,
+                            y2: 1
+                        },
+                        stops: [
+                            [0, Highcharts.getOptions().colors[8]],
+                            [1, Highcharts.color(Highcharts.getOptions().colors[6]).setOpacity(0).get('rgba')]
+                        ]
+                    }
             }]
         });
 
