@@ -9,6 +9,7 @@
     <script src="https://code.highcharts.com/stock/modules/export-data.js"></script>
     <script src="https://code.highcharts.com/modules/accessibility.js"></script>
     <script src="https://www.unpkg.com/@eohjsc/era-widget@1.0.14/src/index.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <style>
         #container {
             height: 400px;
@@ -17,37 +18,37 @@
     </style>
 </head>
 <body>
+    <button id="exportButton">Export to Excel</button>
     <div id="container"></div>
     <script>
         // Era Widget initialization
         const eraWidget = new EraWidget();
         let config = null;
-        let BreathValue = 0; // Khởi tạo giá trị nhịp tim mặc định
+        let BreathValue = 0; // Khởi tạo giá trị nhịp thở mặc định
 
         eraWidget.onConfiguration((configuration) => {
             config = configuration.realtime_configs[0];
         });
 
         eraWidget.onValues((values) => {
-            const input = document.getElementById('Breath');
-            BreathValue = values[config.id].value; // Giả sử values[config.id].value là nhịp tim thực tế
-            input.checked = values[config.id].value > 0; // Đặt trạng thái của checkbox dựa trên nhịp tim
+            BreathValue = values[config.id].value; // Giả sử values[config.id].value là nhịp thở thực tế
         });
 
         eraWidget.ready();
         
+        const dataBuffer = [];
+
         // Create the chart
         Highcharts.stockChart('container', {
             chart: {
                 events: {
                     load: function () {
-
-                        // set up the updating of the chart each second
                         const series = this.series[0];
                         setInterval(function () {
                             const x = (new Date()).getTime(), // current time
                                 y = BreathValue;
                             series.addPoint([x, y], true, true);
+                            dataBuffer.push([x, y]); // Lưu trữ dữ liệu vào mảng dataBuffer
                         }, 1000);
                     }
                 }
@@ -102,6 +103,16 @@
                     return data;
                 }())
             }]
+        });
+
+        document.getElementById('exportButton').addEventListener('click', function () {
+            const ws = XLSX.utils.json_to_sheet(dataBuffer.map(point => ({
+                Time: (new Date(point[0])).toLocaleString(),
+                BreathValue: point[1]
+            })));
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Breath');
+            XLSX.writeFile(wb, 'BreathValue.xlsx');
         });
     </script>
 </body>
